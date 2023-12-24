@@ -1,15 +1,16 @@
 package at.nanopenguin.mtcg.http;
 
+import at.nanopenguin.mtcg.application.Service;
+
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
 public class RequestHandler implements Runnable {
     private final Socket serviceSocket;
     private final Router router;
-    private BufferedReader br;
-    private OutputStream out;
 
     public RequestHandler(Socket serviceSocket, Router router) {
         this.serviceSocket = serviceSocket;
@@ -19,11 +20,36 @@ public class RequestHandler implements Runnable {
     @Override
     public void run() {
         try {
-            Response response = new Response(HttpStatus.OK, "application/json", "[]");
+            BufferedReader br = new BufferedReader(new InputStreamReader(serviceSocket.getInputStream()));
 
-            this.out = this.serviceSocket.getOutputStream();
+            System.out.println("creating httpRequest");
+            HttpRequest httpRequest = new HttpRequest(br);
+
+            Response response;
+            responseBuilder: {
+                if (httpRequest.getMethod() == null) {
+                    System.out.println("generic error");
+                    response = new Response(HttpStatus.INTERNAL, "text/plain", "");
+                    break responseBuilder;
+                }
+
+                System.out.println("getting service");
+                Service service = router.resolveRoute(httpRequest.getMethod(), httpRequest.getPath());
+
+                if (service == null) {
+                    System.out.println("service does not exist");
+                    response = new Response(HttpStatus.NOT_IMPLEMENTED, "text/plain", "");
+                    break responseBuilder;
+                }
+                System.out.println("creating response");
+                response = service.handleRequest(httpRequest.getBody());
+            }
+
+            OutputStream out = this.serviceSocket.getOutputStream();
             out.write(response.get().getBytes());
             out.flush();
+
+            System.out.println("request done");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

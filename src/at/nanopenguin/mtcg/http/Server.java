@@ -28,6 +28,7 @@ public class Server {
                 final Socket serviceSocket = listener.accept();
                 final RequestHandler requestHandler = new RequestHandler(serviceSocket, this.router);
 
+                System.out.println("received request");
                 executorService.submit(requestHandler);
 
             }

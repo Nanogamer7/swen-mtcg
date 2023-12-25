@@ -39,14 +39,16 @@ public class Router {
 
         int i = 1;
         System.out.println(routeComponents[i]);
-        for (String search = routeComponents[i]; component.service == null; component = this.routeMap.get(method).get(search = String.join("/", search, routeComponents[++i]))) {
-            System.out.println(String.join("/", search, routeComponents[i+1]));
+        for (String search = routeComponents[i]; component != null && component.service == null; component = this.routeMap.get(method).get(search = String.join("/", search, routeComponents[++i]))) {
+            System.out.println(component);
             if (component.hasPathVariable) {
                 pathVariable = routeComponents[++i];
                 search = String.join("/", search, "{var}");
-                System.out.println(search + " - " + routeComponents[i+1]);
-                System.out.println(this.routeMap.get(HttpMethod.GET).containsKey("test/{var}"));
             }
+        }
+
+        if (component == null) {
+            return null;
         }
 
         component.service.setPathVariable(pathVariable);

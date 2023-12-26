@@ -5,7 +5,7 @@ import at.nanopenguin.mtcg.application.Service;
 import java.util.*;
 
 public class Router {
-    private Map<HttpMethod, Map<String, Route>> routeMap = new HashMap<>();
+    private final Map<HttpMethod, Map<String, Route>> routeMap = new HashMap<>();
 
     public void addRoute(final HttpMethod method, final String route, final Service service, final int pathVarPos) {
         Map<String, Route> map = this.routeMap.get(method);
@@ -13,7 +13,7 @@ public class Router {
             this.routeMap.put(method, (map = new HashMap<>()));
         }
 
-        List<String> routeComponents = new ArrayList<String>(Arrays.asList(route.split("/")));
+        List<String> routeComponents = new ArrayList<>(Arrays.asList(route.split("/")));
         if (pathVarPos > 0) {
             routeComponents.set(pathVarPos, "{var}");
         }
@@ -35,8 +35,8 @@ public class Router {
         int i = 0;
         Route component = this.routeMap.get(method).get(routeComponents[i]);
         System.out.println(routeComponents[i]);
-        for (String search = routeComponents[i]; component != null && component.service == null; component = this.routeMap.get(method).get(search = String.join("/", search, routeComponents[++i]))) {
-            if (component.hasPathVariable) {
+        for (String search = routeComponents[i]; component != null && component.service() == null; component = this.routeMap.get(method).get(search = String.join("/", search, routeComponents[++i]))) {
+            if (component.hasPathVariable()) {
                 pathVariable = routeComponents[++i];
                 search = String.join("/", search, "{var}");
             }
@@ -46,8 +46,8 @@ public class Router {
             return null;
         }
 
-        component.service.setPathVariable(pathVariable);
-        return component.service;
+        component.service().setPathVariable(pathVariable);
+        return component.service();
 
     }
 }

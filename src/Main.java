@@ -8,7 +8,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException {
         Router router = new Router();
-        router.addRoute(HttpMethod.GET, "/test/{var}/service", new TestService(), 1);
+        router.addRoute(HttpMethod.GET, "/test/{var}/service", new TestService(), 2);
 
         Server server = new Server(10001, 10, router);
         server.start();

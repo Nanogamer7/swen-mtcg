@@ -40,7 +40,7 @@ public class RequestHandler implements Runnable {
                     break responseBuilder;
                 }
                 System.out.println("creating response");
-                response = service.handleRequest(httpRequest.getBody());
+                response = service.handleRequest(httpRequest);
             }
 
             OutputStream out = this.serviceSocket.getOutputStream();

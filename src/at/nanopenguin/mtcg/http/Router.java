@@ -1,5 +1,6 @@
 package at.nanopenguin.mtcg.http;
 
+import at.nanopenguin.mtcg.application.InternalErrorService;
 import at.nanopenguin.mtcg.application.Service;
 
 import java.util.*;
@@ -19,8 +20,9 @@ public class Router {
         }
 
         for (int i = 0; i < routeComponents.size(); i++) {
-            Route routeComponent = new Route(i == routeComponents.size() - 1 ? service : null, i == pathVarPos - 1);
             String path = String.join("/", routeComponents.subList(0, i+1));
+            Route existingRoute = map.get(path);
+            Route routeComponent = new Route(i == routeComponents.size() - 1 ? service : existingRoute != null ? existingRoute.service() : null, i == pathVarPos - 1 || (existingRoute != null && existingRoute.hasPathVariable()));
             map.put(path, routeComponent);
         }
 
@@ -32,11 +34,12 @@ public class Router {
 
         String pathVariable = null;
 
-        int i = 0;
-        Route component = this.routeMap.get(method).get(routeComponents[i]);
-        System.out.println(routeComponents[i]);
-        for (String search = routeComponents[i]; component != null && component.service() == null; component = this.routeMap.get(method).get(search = String.join("/", search, routeComponents[++i]))) {
-            if (component.hasPathVariable()) {
+        int i = 1;
+
+        Route component = this.routeMap.get(method).get("/" + routeComponents[i]);
+
+        for (String search = "/" + routeComponents[i]; component != null && (component.service() == null || routeComponents.length - 1 > i); component = this.routeMap.get(method).get(search = routeComponents.length - 1 > i ? String.join("/", search, routeComponents[++i]) : search)) {
+            if (component.hasPathVariable() && routeComponents.length - 1 > i) {
                 pathVariable = routeComponents[++i];
                 search = String.join("/", search, "{var}");
             }
@@ -44,6 +47,10 @@ public class Router {
 
         if (component == null) {
             return null;
+        }
+
+        if (component.service() == null) {
+            return new InternalErrorService();
         }
 
         component.service().setPathVariable(pathVariable);

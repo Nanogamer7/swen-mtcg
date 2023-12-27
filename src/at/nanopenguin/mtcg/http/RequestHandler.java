@@ -28,9 +28,7 @@ public class RequestHandler implements Runnable {
             Response response;
             responseBuilder: {
                 if (httpRequest.getMethod() == null) {
-                    System.out.println("generic error");
-                    response = new Response(HttpStatus.INTERNAL, "text/plain", "");
-                    break responseBuilder;
+                    return;
                 }
 
                 System.out.println("getting service");

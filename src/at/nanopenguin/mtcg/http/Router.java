@@ -1,6 +1,5 @@
 package at.nanopenguin.mtcg.http;
 
-import at.nanopenguin.mtcg.application.InternalErrorService;
 import at.nanopenguin.mtcg.application.Service;
 
 import java.util.*;
@@ -34,7 +33,7 @@ public class Router {
         System.out.println("resolving route " + route);
         String[] routeComponents = route.split("/");
 
-        String pathVariable = null;
+        String pathVariable = null; // might be useful later, idk how services
 
         int i = 1;
 

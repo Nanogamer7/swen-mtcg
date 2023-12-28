@@ -5,6 +5,7 @@ import at.nanopenguin.mtcg.http.HttpRequest;
 import at.nanopenguin.mtcg.http.Response;
 
 public class InternalErrorService implements Service {
+    /* For error in http server */
 
     @Override
     public Response handleRequest(HttpRequest request) {

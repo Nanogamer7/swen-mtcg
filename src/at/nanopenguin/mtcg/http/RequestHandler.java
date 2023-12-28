@@ -36,7 +36,7 @@ public class RequestHandler implements Runnable {
 
                 if (service == null) {
                     System.out.println("service does not exist");
-                    response = new Response(HttpStatus.NOT_IMPLEMENTED, "text/plain", "");
+                    response = new Response(HttpStatus.NOT_FOUND, "text/plain", "");
                     break responseBuilder;
                 }
                 System.out.println("creating response");

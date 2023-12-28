@@ -8,6 +8,6 @@ public class TestService implements Service {
 
     @Override
     public Response handleRequest(HttpRequest request) {
-        return new Response(HttpStatus.OK, "application/json", "");
+        return new Response(HttpStatus.NOT_IMPLEMENTED, "application/json", "");
     }
 }

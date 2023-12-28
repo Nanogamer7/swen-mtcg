@@ -9,7 +9,7 @@ public class HttpRequest {
     private final HttpMethod method;
     private final String path;
     private final String version;
-    private Map<String, String> httpHeaders = new HashMap<String, String>();
+    private final Map<String, String> httpHeaders = new HashMap<>();
     private final String body;
 
     public HttpRequest(BufferedReader br) throws IOException {

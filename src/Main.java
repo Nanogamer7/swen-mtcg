@@ -33,8 +33,8 @@ public class Main {
         /* trading */
         router.addRoute(HttpMethod.GET, "/tradings", new TestService(), new int[]{});
         router.addRoute(HttpMethod.POST, "/tradings", new TestService(), new int[]{});
-        router.addRoute(HttpMethod.DELETE, "/tradings/{tradingdealid}", new TestService(), new int[]{2});
-        router.addRoute(HttpMethod.POST, "/tradings/{tradingdealid}", new TestService(), new int[]{2});
+        router.addRoute(HttpMethod.DELETE, "/tradings/{tradingDealId}", new TestService(), new int[]{2});
+        router.addRoute(HttpMethod.POST, "/tradings/{tradingDealId}", new TestService(), new int[]{2});
 
         Server server = new Server(10001, 10, router);
         server.start();

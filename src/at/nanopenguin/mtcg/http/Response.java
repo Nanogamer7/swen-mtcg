@@ -19,10 +19,8 @@ public class Response {
 
         String localDatetime = DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now(ZoneId.of("UTC")));
         return "HTTP/1.1 " + this.httpStatus.statusCode + " " + this.httpStatus.statusMessage + "\r\n" +
-                "Cache-Control: max-age=0\r\n" +
                 "Connection: close\r\n" +
                 "Date: " + localDatetime + "\r\n" +
-                "Expires: " + localDatetime + "\r\n" +
                 "Content-Type: " + this.contentType + "\r\n" +
                 "Content-Length: " + this.content.length() + "\r\n" +
                 "\r\n" +

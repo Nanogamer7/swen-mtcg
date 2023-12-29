@@ -1,4 +1,5 @@
-import at.nanopenguin.mtcg.application.TestService;
+import at.nanopenguin.mtcg.application.service.TestService;
+import at.nanopenguin.mtcg.application.service.UserService;
 import at.nanopenguin.mtcg.http.HttpMethod;
 import at.nanopenguin.mtcg.http.Router;
 import at.nanopenguin.mtcg.http.Server;
@@ -11,10 +12,10 @@ public class Main {
         router.addRoute(HttpMethod.GET, "/test/{var}/service", new TestService(), new int[]{2});
 
         /* users */
-        router.addRoute(HttpMethod.POST, "/users", new TestService(), new int[]{});
-        router.addRoute(HttpMethod.GET, "/users/{username}", new TestService(), new int[]{2});
-        router.addRoute(HttpMethod.PUT, "/users/{username}", new TestService(), new int[]{2});
-        router.addRoute(HttpMethod.POST, "/sessions", new TestService(), new int[]{});
+        router.addRoute(HttpMethod.POST, "/users", new UserService(), new int[]{});
+        router.addRoute(HttpMethod.GET, "/users/{username}", new UserService(), new int[]{2});
+        router.addRoute(HttpMethod.PUT, "/users/{username}", new UserService(), new int[]{2});
+        router.addRoute(HttpMethod.POST, "/sessions", new UserService(), new int[]{});
 
         /* packages */
         router.addRoute(HttpMethod.POST, "/packages", new TestService(), new int[]{});

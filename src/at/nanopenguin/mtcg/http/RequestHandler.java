@@ -1,6 +1,6 @@
 package at.nanopenguin.mtcg.http;
 
-import at.nanopenguin.mtcg.application.Service;
+import at.nanopenguin.mtcg.application.service.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;

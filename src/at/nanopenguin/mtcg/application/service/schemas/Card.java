@@ -7,5 +7,5 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonSerialize
 @JsonDeserialize
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record UserCredentials(String username, String password) {
+public record Card(String id, String name, Float damage) {
 }

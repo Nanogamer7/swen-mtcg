@@ -1,6 +1,7 @@
 package at.nanopenguin.mtcg.http;
 
 import at.nanopenguin.mtcg.application.service.Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +41,12 @@ public class RequestHandler implements Runnable {
                     break responseBuilder;
                 }
                 System.out.println("creating response");
-                response = service.handleRequest(httpRequest);
+                try {
+                    response = service.handleRequest(httpRequest);
+                }
+                catch (JsonProcessingException e) {
+                    response = new Response(HttpStatus.BAD_REQUEST, "application/json", "");
+                }
             }
 
             OutputStream out = this.serviceSocket.getOutputStream();

@@ -13,12 +13,20 @@ public class UserService implements Service {
 
     @Override
     public Response handleRequest(HttpRequest request) throws JsonProcessingException {
-        UserCredentials userCredentials = new UserCredentials("test", "test");
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(userCredentials);
-
-        System.out.println(json);
-
-        return new Response(HttpStatus.OK, "application/json", "");
+        try {
+            if (request.getPath().split("/")[1].equals("sessions")) {
+                // response = login()
+                return new Response(HttpStatus.NOT_IMPLEMENTED);
+            }
+            return switch (request.getMethod()) {
+                case GET -> new Response(HttpStatus.NO_CONTENT);
+                case POST -> new Response(HttpStatus.NOT_IMPLEMENTED);
+                case PUT -> new Response(HttpStatus.NOT_IMPLEMENTED);
+                default -> new Response(HttpStatus.INTERNAL);
+            };
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            return new Response(HttpStatus.BAD_REQUEST);
+        }
     }
 }

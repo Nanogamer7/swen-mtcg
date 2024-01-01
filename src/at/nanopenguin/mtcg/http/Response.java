@@ -11,8 +11,28 @@ public class Response {
 
     public Response(HttpStatus httpStatus, String contentType, String content) {
         this.httpStatus = httpStatus;
+
+        if (httpStatus == HttpStatus.NO_CONTENT) {
+            this.contentType = null;
+            this.content = null;
+            return;
+        }
+
         this.contentType = contentType;
         this.content = content;
+    }
+
+    public Response(HttpStatus httpStatus) {
+        this.httpStatus = httpStatus;
+
+        if (httpStatus == HttpStatus.NO_CONTENT) {
+            this.contentType = null;
+            this.content = null;
+            return;
+        }
+
+        this.contentType = "";
+        this.content = "";
     }
 
     public String get() {
@@ -21,9 +41,10 @@ public class Response {
         return "HTTP/1.1 " + this.httpStatus.statusCode + " " + this.httpStatus.statusMessage + "\r\n" +
                 "Connection: close\r\n" +
                 "Date: " + localDatetime + "\r\n" +
-                "Content-Type: " + this.contentType + "\r\n" +
-                "Content-Length: " + this.content.length() + "\r\n" +
-                "\r\n" +
-                this.content;
+                (this.content == null ? "\r\n\r\n" :
+                        ((this.contentType == null || this.contentType.isEmpty()) ? "" : "Content-Type: " + this.contentType + "\r\n") +
+                        "Content-Length: " + this.content.length() + "\r\n" +
+                        "\r\n" +
+                        this.content);
     }
 }

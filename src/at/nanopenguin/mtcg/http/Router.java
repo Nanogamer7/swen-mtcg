@@ -33,15 +33,13 @@ public class Router {
         System.out.println("resolving route " + route);
         String[] routeComponents = route.split("/");
 
-        String pathVariable = null; // might be useful later, idk how services
-
         int i = 1;
 
         Route component = this.routeMap.get(method).get("/" + routeComponents[i]);
 
         for (String search = "/" + routeComponents[i]; component != null && (component.service() == null || routeComponents.length - 1 > i) && routeComponents.length - 1 >= i; component = this.routeMap.get(method).get(search = routeComponents.length - 1 > i++ ? String.join("/", search, routeComponents[i]) : search)) {
             if (component.hasPathVariable() && routeComponents.length - 1 > i) {
-                pathVariable = routeComponents[++i];
+                ++i;
                 search = String.join("/", search, "{var}");
             }
         }

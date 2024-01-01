@@ -1,15 +1,21 @@
 package at.nanopenguin.mtcg.http;
 
+import lombok.Getter;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class HttpRequest {
+    @Getter
     private final HttpMethod method;
+    @Getter
     private final String path;
+    @Getter
     private final String version;
     private final Map<String, String> httpHeaders = new HashMap<>();
+    @Getter
     private final String body;
 
     public HttpRequest(BufferedReader br) throws IOException {
@@ -26,7 +32,10 @@ public class HttpRequest {
                 this.httpHeaders.put(headerEntry[0], headerEntry[1]);
             }
 
-            this.body = this.httpHeaders.containsKey("Content-Length") ? new String(new char[Integer.parseInt(this.httpHeaders.get("Content-Length"))]) : null;
+            // this.body = this.httpHeaders.containsKey("Content-Length") ? new String(new char[Integer.parseInt(this.httpHeaders.get("Content-Length"))]) : null;
+            int contentLength = Integer.parseInt(this.httpHeaders.get("Content-Length"));
+            char[] charBuffer = new char[contentLength];
+            this.body = br.read(charBuffer, 0, contentLength) > 0 ? new String(charBuffer) : null;
 
             return;
         }
@@ -37,23 +46,8 @@ public class HttpRequest {
         this.body = null;
     }
 
-    public HttpMethod getMethod() {
-        return method;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
     public String getHttpHeader(String header) {
         return httpHeaders.get(header);
     }
 
-    public String getBody() {
-        return body;
-    }
 }

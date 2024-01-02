@@ -1,21 +1,18 @@
 package at.nanopenguin.mtcg.http;
 
+import lombok.RequiredArgsConstructor;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+@RequiredArgsConstructor
 public class Server {
     private final int port; // 16-bit unsigned, not enforced
     private final int threads;
     private final Router router;
-
-    public Server(int port, int threads, Router router) {
-        this.port = port;
-        this.threads = threads;
-        this.router = router;
-    }
 
     public void  start() throws IOException {
         try (ServerSocket listener = new ServerSocket(this.port)) {

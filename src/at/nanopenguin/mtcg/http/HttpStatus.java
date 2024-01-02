@@ -1,5 +1,8 @@
 package at.nanopenguin.mtcg.http;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public enum HttpStatus {
     OK(200, "OK"),
     CREATED(201, "Created"),
@@ -15,9 +18,4 @@ public enum HttpStatus {
 
     public final int statusCode;
     public final String statusMessage;
-
-    HttpStatus(int code, String message) {
-        this.statusCode = code;
-        this.statusMessage = message;
-    }
 }

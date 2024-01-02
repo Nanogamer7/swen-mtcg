@@ -2,6 +2,7 @@ package at.nanopenguin.mtcg.http;
 
 import at.nanopenguin.mtcg.application.service.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,14 +10,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 
+@RequiredArgsConstructor
 public class RequestHandler implements Runnable {
     private final Socket serviceSocket;
     private final Router router;
-
-    public RequestHandler(Socket serviceSocket, Router router) {
-        this.serviceSocket = serviceSocket;
-        this.router = router;
-    }
 
     @Override
     public void run() {

@@ -1,6 +1,5 @@
 package at.nanopenguin.mtcg.application.service;
 
-import at.nanopenguin.mtcg.application.service.schemas.UserCredentials;
 import at.nanopenguin.mtcg.http.HttpMethod;
 import at.nanopenguin.mtcg.http.HttpRequest;
 import at.nanopenguin.mtcg.http.HttpStatus;

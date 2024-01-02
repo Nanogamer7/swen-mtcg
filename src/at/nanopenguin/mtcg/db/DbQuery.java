@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Builder
 public final class DbQuery {
-    private static final String connectionString = "jdbc:postgres://localhost:5432/mydb?user=postgres&password=postgres";
+    private static final String connectionString = "jdbc:postgresql://localhost:5432/mydb?user=postgres&password=postgres";
 
     @NonNull
     private final SqlCommand command;
@@ -61,7 +61,8 @@ public final class DbQuery {
                     .filter(columnName -> columnName.matches("[a-zA-Z0-9_]+"))
                     .collect(Collectors.joining(", "));
 
-            String sql = String.format("INSERT INTO %s (%s) VALUES (%s);", table.table, columns, String.join(", ", Collections.nCopies(this.parameters.size(), "?")));
+            String sql = String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT DO NOTHING;", table.table, columns, String.join(", ", Collections.nCopies(this.parameters.size(), "?")));
+            // on conflict return int equals 0
 
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 int i = 1;

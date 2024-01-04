@@ -25,7 +25,7 @@ public final class DbQuery {
     private SortedMap<String, Object> conditions;
 
     public static class DbQueryBuilder {
-        public ResultSet executeQuery() throws SQLException {
+        public List<Map<String, Object>> executeQuery() throws SQLException {
             DbQuery dbQuery = this.build();
             if (dbQuery.command != SqlCommand.SELECT) throw new SQLException();
             return dbQuery.read();
@@ -75,7 +75,7 @@ public final class DbQuery {
         }
     }
 
-    private ResultSet read() throws SQLException {
+    private List<Map<String, Object>> read() throws SQLException {
         try (Connection connection = connect()) {
             StringJoiner columnJoiner = new StringJoiner(", ");
             if (this.columns.isEmpty()) {
@@ -92,7 +92,18 @@ public final class DbQuery {
                     preparedStatement.setObject(i++, entry.getValue());
                 }
 
-                return preparedStatement.executeQuery();
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                List<Map<String, Object>> result = new ArrayList<>();
+                while (resultSet.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                        row.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                    }
+                    result.add(row);
+                }
+
+                return result;
             }
         }
     }

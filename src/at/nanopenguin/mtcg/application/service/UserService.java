@@ -1,5 +1,6 @@
 package at.nanopenguin.mtcg.application.service;
 
+import at.nanopenguin.mtcg.application.SessionHandler;
 import at.nanopenguin.mtcg.application.User;
 import at.nanopenguin.mtcg.application.service.schemas.UserCredentials;
 import at.nanopenguin.mtcg.http.HttpMethod;
@@ -10,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class UserService implements Service {
 
@@ -17,14 +19,17 @@ public class UserService implements Service {
     public Response handleRequest(HttpRequest request) throws JsonProcessingException {
         try {
             if (request.getPath().split("/")[1].equals("sessions") && request.getMethod() == HttpMethod.POST) {
-                // response = login()
-                return new Response(HttpStatus.NOT_IMPLEMENTED); // new ObjectMapper().readValue(request.getBody(), UserCredentials.class);
+                // login
+                UUID uuid = SessionHandler.getInstance().login(new ObjectMapper().readValue(request.getBody(), UserCredentials.class));
+                return uuid != null ?
+                        new Response(HttpStatus.OK, "application/json", uuid.toString()) :
+                        new Response(HttpStatus.UNAUTHORIZED);
             }
 
             if (request.getPath().split("/")[1].equals("users")) {
                 return switch (request.getMethod()) {
                     case GET -> new Response(HttpStatus.NOT_IMPLEMENTED);
-                    case POST -> {
+                    case POST -> { // register new user
                         int success = User.create(new ObjectMapper().readValue(request.getBody(), UserCredentials.class));
                         yield new Response(success > 0 ? HttpStatus.CREATED : HttpStatus.CONFLICT);
                     }

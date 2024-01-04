@@ -1,4 +1,6 @@
 package at.nanopenguin.mtcg.application;
 
-public record UserInfo(int id, String username, boolean admin) {
+import java.util.UUID;
+
+public record UserInfo(UUID id, String username, boolean admin) {
 }

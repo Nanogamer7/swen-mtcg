@@ -31,7 +31,7 @@ public final class SessionHandler {
          val result = DbQuery.builder()
                  .command(SqlCommand.SELECT)
                  .table(Table.USERS)
-                 .column("id")
+                 .column("uuid")
                  .column("password")
                  .column("admin")
                  .condition("username", userCredentials.username())
@@ -48,7 +48,7 @@ public final class SessionHandler {
          }
 
          UUID uuid = UUID.randomUUID();
-         this.Sessions.put(uuid, new UserInfo((int) row1.get("id"), userCredentials.username(), (boolean) row1.get("admin")));
+         this.Sessions.put(uuid, new UserInfo((UUID) row1.get("uuid"), userCredentials.username(), (boolean) row1.get("admin")));
          return uuid;
      }
 

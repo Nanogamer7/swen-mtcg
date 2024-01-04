@@ -26,6 +26,7 @@ public class RequestHandler implements Runnable {
             Response response;
             responseBuilder: {
                 if (httpRequest.getMethod() == null) {
+                    System.out.println("Thanks, postman");
                     return;
                 }
 

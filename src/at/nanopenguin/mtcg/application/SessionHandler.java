@@ -6,7 +6,6 @@ import at.nanopenguin.mtcg.db.SqlCommand;
 import at.nanopenguin.mtcg.db.Table;
 import lombok.val;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +13,7 @@ import java.util.UUID;
 
 public final class SessionHandler {
      private static SessionHandler INSTANCE;
-     private final Map<UUID, Integer> Sessions = new HashMap<>();
+     private final Map<UUID, UserInfo> Sessions = new HashMap<>();
 
      private SessionHandler() {
 
@@ -34,19 +33,38 @@ public final class SessionHandler {
                  .table(Table.USERS)
                  .column("id")
                  .column("password")
+                 .column("admin")
                  .condition("username", userCredentials.username())
                  .executeQuery();
          if (result.isEmpty()) {
              // user not found
              return null;
          }
-         if (!result.get(0).get("password").equals(userCredentials.password())) {
+
+         val row1 =  result.get(0);
+         if (!row1.get("password").equals(userCredentials.password())) {
              // wrong password
              return null;
          }
 
          UUID uuid = UUID.randomUUID();
-         this.Sessions.put(uuid, (Integer) result.get(0).get("id"));
+         this.Sessions.put(uuid, new UserInfo((int) row1.get("id"), userCredentials.username(), (boolean) row1.get("admin")));
          return uuid;
      }
+
+    public boolean verifyUUID(UUID uuid) {
+        return verifyUUID(uuid, false);
+    }
+
+     public boolean verifyUUID(UUID uuid, boolean requireAdmin) {
+         return Sessions.containsKey(uuid) && (!requireAdmin || Sessions.get(uuid).admin());
+     }
+
+     public boolean verifyUUID(UUID uuid, String username) {
+        return verifyUUID(uuid, username, false);
+     }
+
+    public boolean verifyUUID(UUID uuid, String username, boolean allowAdmin) {
+        return Sessions.containsKey(uuid) && (username.equals(Sessions.get(uuid).username()) || (allowAdmin && Sessions.get(uuid).admin()));
+    }
 }

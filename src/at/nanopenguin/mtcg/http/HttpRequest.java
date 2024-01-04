@@ -32,11 +32,9 @@ public class HttpRequest {
                 this.httpHeaders.put(headerEntry[0], headerEntry[1]);
             }
 
-            // this.body = this.httpHeaders.containsKey("Content-Length") ? new String(new char[Integer.parseInt(this.httpHeaders.get("Content-Length"))]) : null;
-            int contentLength = Integer.parseInt(this.httpHeaders.get("Content-Length"));
+            int contentLength = this.httpHeaders.containsKey("Content-Length") ? Integer.parseInt(this.httpHeaders.get("Content-Length")) : 0;
             char[] charBuffer = new char[contentLength];
             this.body = br.read(charBuffer, 0, contentLength) > 0 ? new String(charBuffer) : null;
-
             return;
         }
 

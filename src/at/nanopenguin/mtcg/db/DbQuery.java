@@ -25,6 +25,9 @@ public final class DbQuery {
     @Singular
     private SortedMap<String, Object> conditions;
     private String returnColumn;
+    private String customSql;
+    @Singular
+    private List<Object> values;
 
 
     public static class DbQueryBuilder {
@@ -32,6 +35,7 @@ public final class DbQuery {
         public List<Map<String, Object>> executeQuery() throws SQLException {
             DbQuery dbQuery = this.build();
             if (dbQuery.command != SqlCommand.SELECT && dbQuery.returnColumn == null) throw new SQLException();
+            if (dbQuery.customSql != null) return DbQuery.executeQuery(dbQuery.customSql, dbQuery.values);
             return switch (dbQuery.command) {
                 case INSERT -> dbQuery.create(true);
                 case SELECT -> dbQuery.read();
@@ -43,6 +47,7 @@ public final class DbQuery {
         public int executeUpdate() throws SQLException {
             if (this.returnColumn != null) throw new SQLException();
             DbQuery dbQuery = this.build();
+            if (dbQuery.customSql != null) return DbQuery.executeUpdate(dbQuery.customSql, dbQuery.values);
             return switch (dbQuery.command) {
                 case INSERT -> dbQuery.create();
                 case UPDATE -> dbQuery.update();

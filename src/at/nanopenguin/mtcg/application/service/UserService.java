@@ -1,12 +1,10 @@
 package at.nanopenguin.mtcg.application.service;
 
 import at.nanopenguin.mtcg.application.SessionHandler;
+import at.nanopenguin.mtcg.application.TokenValidity;
 import at.nanopenguin.mtcg.application.User;
 import at.nanopenguin.mtcg.application.service.schemas.UserCredentials;
 import at.nanopenguin.mtcg.application.service.schemas.UserData;
-import at.nanopenguin.mtcg.db.DbQuery;
-import at.nanopenguin.mtcg.db.SqlCommand;
-import at.nanopenguin.mtcg.db.Table;
 import at.nanopenguin.mtcg.http.HttpMethod;
 import at.nanopenguin.mtcg.http.HttpRequest;
 import at.nanopenguin.mtcg.http.HttpStatus;
@@ -35,7 +33,7 @@ public class UserService implements Service {
                 return switch (request.getMethod()) {
                     case GET -> {
                         String username = request.getPath().split("/")[2];
-                        if (!SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), username, true))
+                        if (SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
                             yield new Response(HttpStatus.UNAUTHORIZED);
                         val userData = User.retrieve(username);
                         yield userData != null ?
@@ -49,7 +47,7 @@ public class UserService implements Service {
                     case PUT -> {
                         String username = request.getPath().split("/")[2];
                         UserData userData = new ObjectMapper().readValue(request.getBody(), UserData.class);
-                        if (!SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), username, true))
+                        if (SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.FORBIDDEN)
                             yield new Response(HttpStatus.UNAUTHORIZED);
                         yield User.update(username, userData) ? new Response(HttpStatus.OK) : new Response(HttpStatus.NOT_FOUND);
                     }

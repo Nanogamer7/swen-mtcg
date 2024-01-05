@@ -12,63 +12,94 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class SessionHandler {
-     private static SessionHandler INSTANCE;
-     private final Map<UUID, UserInfo> Sessions = new HashMap<>();
+    private static SessionHandler INSTANCE;
+    private final Map<UUID, UserInfo> Sessions = new HashMap<>();
 
-     private SessionHandler() {
+    private SessionHandler() {
 
-     }
+    }
 
-     public static SessionHandler getInstance() {
+    public static SessionHandler getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new SessionHandler();
         }
 
         return INSTANCE;
-     }
+    }
 
-     public UUID login(UserCredentials userCredentials) throws SQLException {
-         val result = DbQuery.builder()
-                 .command(SqlCommand.SELECT)
-                 .table(Table.USERS)
-                 .column("uuid")
-                 .column("password")
-                 .column("admin")
-                 .condition("username", userCredentials.username())
-                 .executeQuery();
-         if (result.isEmpty()) {
-             // user not found
-             return null;
-         }
+    public UUID login(UserCredentials userCredentials) throws SQLException {
+        val result = DbQuery.builder()
+                .command(SqlCommand.SELECT)
+                .table(Table.USERS)
+                .column("uuid")
+                .column("password")
+                .column("admin")
+                .condition("username", userCredentials.username())
+                .executeQuery();
+        if (result.isEmpty()) {
+            // user not found
+            return null;
+        }
 
-         val row1 =  result.get(0);
-         if (!row1.get("password").equals(userCredentials.password())) {
-             // wrong password
-             return null;
-         }
+        val row1 = result.get(0);
+        if (!row1.get("password").equals(userCredentials.password())) {
+            // wrong password
+            return null;
+        }
 
-         UUID uuid = UUID.randomUUID();
-         this.Sessions.put(uuid, new UserInfo((UUID) row1.get("uuid"), userCredentials.username(), (boolean) row1.get("admin")));
-         return uuid;
-     }
+        UUID uuid = UUID.randomUUID();
+        this.Sessions.put(uuid, new UserInfo((UUID) row1.get("uuid"), userCredentials.username(), (boolean) row1.get("admin")));
+        return uuid;
+    }
 
-     public static UUID uuidFromHttpHeader(String headerValue) {
-         return headerValue == null ? null : UUID.fromString(headerValue.replaceFirst("^Bearer ", ""));
-     }
+    public static UUID uuidFromHttpHeader(String headerValue) {
+        return headerValue == null ? null : UUID.fromString(headerValue.replaceFirst("^Bearer ", ""));
+    }
 
-    public boolean verifyUUID(UUID uuid) {
+    public TokenValidity verifyUUID(UUID uuid) {
         return verifyUUID(uuid, false);
     }
 
-     public boolean verifyUUID(UUID uuid, boolean requireAdmin) {
-         return uuid != null && Sessions.containsKey(uuid) && (!requireAdmin || Sessions.get(uuid).admin());
-     }
+    public TokenValidity verifyUUID(UUID uuid, boolean requireAdmin) {
+        if (uuid == null) return TokenValidity.MISSING;
+        if (!Sessions.containsKey(uuid)) return TokenValidity.INVALID;
+        if (Sessions.get(uuid).admin() || !requireAdmin) return TokenValidity.VALID;
+        return TokenValidity.FORBIDDEN;
+    }
 
-     public boolean verifyUUID(UUID uuid, String username) {
+    public TokenValidity verifyUUID(UUID uuid, String username) {
         return verifyUUID(uuid, username, false);
-     }
+    }
 
-    public boolean verifyUUID(UUID uuid, String username, boolean allowAdmin) {
-        return uuid != null && Sessions.containsKey(uuid) && (username.equals(Sessions.get(uuid).username()) || (allowAdmin && Sessions.get(uuid).admin()));
+    public TokenValidity verifyUUID(UUID uuid, String username, boolean allowAdmin) {
+        if (uuid == null) return TokenValidity.MISSING;
+        if (!Sessions.containsKey(uuid)) return TokenValidity.INVALID;
+        if (username.equals(Sessions.get(uuid).username())) return TokenValidity.VALID;
+        if (allowAdmin && Sessions.get(uuid).admin()) return TokenValidity.VALID;
+        return TokenValidity.FORBIDDEN;
+
     }
 }
+
+/*
+*
+* join() {
+*   lock()
+*   checks if someone waiting
+*     no -> {
+*       var waiting = true // sets self as waiting idk
+*       unlock()
+*       wait()
+*       response = battle log
+*       // process stuff
+*       unlock()
+*     }
+*     yes -> {
+*       start battle
+*       var battle log = battle log // no na ned
+*       // process stuff
+*       notifyAll()
+*     }
+* }
+*
+* */

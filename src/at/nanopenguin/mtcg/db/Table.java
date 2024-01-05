@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum Table {
-    USERS("users");
+    USERS("users"),
+    CARDS("cards"),
+    PACKAGES("packages");
 
     public final String table;
 }

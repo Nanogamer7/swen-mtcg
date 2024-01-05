@@ -52,12 +52,16 @@ public final class SessionHandler {
          return uuid;
      }
 
+     public static UUID uuidFromHttpHeader(String headerValue) {
+         return headerValue == null ? null : UUID.fromString(headerValue.replaceFirst("^Bearer ", ""));
+     }
+
     public boolean verifyUUID(UUID uuid) {
         return verifyUUID(uuid, false);
     }
 
      public boolean verifyUUID(UUID uuid, boolean requireAdmin) {
-         return Sessions.containsKey(uuid) && (!requireAdmin || Sessions.get(uuid).admin());
+         return uuid != null && Sessions.containsKey(uuid) && (!requireAdmin || Sessions.get(uuid).admin());
      }
 
      public boolean verifyUUID(UUID uuid, String username) {
@@ -65,6 +69,6 @@ public final class SessionHandler {
      }
 
     public boolean verifyUUID(UUID uuid, String username, boolean allowAdmin) {
-        return Sessions.containsKey(uuid) && (username.equals(Sessions.get(uuid).username()) || (allowAdmin && Sessions.get(uuid).admin()));
+        return uuid != null && Sessions.containsKey(uuid) && (username.equals(Sessions.get(uuid).username()) || (allowAdmin && Sessions.get(uuid).admin()));
     }
 }

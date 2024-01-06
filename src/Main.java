@@ -18,7 +18,7 @@ public class Main {
 
         /* packages */
         router.addRoute(HttpMethod.POST, "/packages", new PackagesService(), new int[]{});
-        router.addRoute(HttpMethod.POST, "/transaction/packages", new PackagesService(), new int[]{});
+        router.addRoute(HttpMethod.POST, "/transactions/packages", new PackagesService(), new int[]{});
 
         /* cards */
         router.addRoute(HttpMethod.GET, "/cards", new CardsService(), new int[]{});

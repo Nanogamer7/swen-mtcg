@@ -1,14 +1,16 @@
 package at.nanopenguin.mtcg.application;
 
+import at.nanopenguin.mtcg.Pair;
 import at.nanopenguin.mtcg.application.service.schemas.Card;
 import at.nanopenguin.mtcg.db.DbQuery;
 import at.nanopenguin.mtcg.db.SqlCommand;
 import at.nanopenguin.mtcg.db.Table;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Package {
     public static boolean create(List<Card> cards) throws SQLException {
@@ -42,25 +44,51 @@ public class Package {
         return true;
     }
 
-    public static boolean addToUser(UUID userUuid) throws SQLException {
-        return DbQuery.builder()
+    public synchronized static Pair<PurchaseStatus, List<Card>> addToUser(UUID userUuid) throws SQLException {
+        int coins = (int) DbQuery.builder()
+                .command(SqlCommand.SELECT)
+                .table(Table.USERS)
+                .column("coins")
+                .condition("uuid", userUuid)
+                .executeQuery()
+                .get(0)
+                .get("coins");
+        if (coins < 5) {
+            return new Pair<>(PurchaseStatus.NOT_ENOUGH_MONEY, null);
+        }
+
+        if ((long) DbQuery.builder()
+                .command(SqlCommand.SELECT)
+                .table(Table.PACKAGES)
+                .column("COUNT(*)")
+                .executeQuery()
+                .get(0)
+                .get("count") == 0) {
+            return new Pair<>(PurchaseStatus.NO_PACKAGE_AVAILABLE, null);
+        }
+
+        val result = DbQuery.builder()
                 .customSql("""
-                        DO $$
-                        DECLARE user_uuid uuid;
-                        DECLARE package_uuid uuid;
-                        DECLARE cost int;
-                        BEGIN
-                            cost = ?;
-                            user_uuid = ?::uuid;
-                            IF (SELECT coins FROM users WHERE uuid = user_uuid) >= cost THEN
-                                package_uuid = (SELECT uuid FROM packages ORDER BY created_at LIMIT 1);
-                                UPDATE cards SET owner = user_uuid WHERE package = package_uuid;
-                                UPDATE users SET coins = coins - cost WHERE uuid = user_uuid;
-                                DELETE FROM packages WHERE uuid = package_uuid;
-                            END IF;
-                        END $$;""")
-                .value(5) // TODO: don't hardcode cost
+                UPDATE cards
+                SET owner = (?::uuid), package = null
+                WHERE package = (
+                    SELECT uuid
+                    FROM packages
+                    ORDER BY created_at
+                    LIMIT 1
+                )
+                RETURNING uuid AS id, name, damage;
+                """)
                 .value(userUuid)
-                .executeUpdate() > 0;
+                .executeQuery();
+
+        DbQuery.builder()
+                .command(SqlCommand.UPDATE)
+                .table(Table.USERS)
+                .parameter("coins", coins - 5)
+                .condition("uuid", userUuid)
+                .executeUpdate();
+
+        return new Pair<>(PurchaseStatus.SUCCESS, new ObjectMapper().convertValue(result, new TypeReference<List<Card>>() {}));
     }
 }

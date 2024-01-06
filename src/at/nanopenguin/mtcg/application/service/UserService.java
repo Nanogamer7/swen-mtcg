@@ -32,7 +32,7 @@ public class UserService implements Service {
             return switch (request.getMethod()) {
                 case GET -> {
                     String username = request.getPath().split("/")[2];
-                    if (SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
+                    if (SessionHandler.getInstance().verifyUUID(SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
                         yield new Response(HttpStatus.UNAUTHORIZED);
                     val userData = User.retrieve(username);
                     yield userData != null ?
@@ -46,7 +46,7 @@ public class UserService implements Service {
                 case PUT -> {
                     String username = request.getPath().split("/")[2];
                     UserData userData = new ObjectMapper().readValue(request.getBody(), UserData.class);
-                    if (SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.FORBIDDEN)
+                    if (SessionHandler.getInstance().verifyUUID(SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
                         yield new Response(HttpStatus.UNAUTHORIZED);
                     yield User.update(username, userData) ? new Response(HttpStatus.OK) : new Response(HttpStatus.NOT_FOUND);
                 }

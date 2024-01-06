@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 public enum Table {
     USERS("users"),
     CARDS("cards"),
-    PACKAGES("packages");
+    PACKAGES("packages"),
+    NAN(null);
 
     public final String table;
 }

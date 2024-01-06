@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 public class RequestHandler implements Runnable {
@@ -44,6 +45,10 @@ public class RequestHandler implements Runnable {
                 }
                 catch (Exception e) {
                     System.out.println(e.getMessage()); // TODO: more info
+                    System.out.println(Arrays.toString(e.getStackTrace())
+                            .replace("[", "\t")
+                            .replace(", ", System.lineSeparator() + "\t")
+                            .replace("]", ""));
                     response = new Response(HttpStatus.INTERNAL);
                 }
             }

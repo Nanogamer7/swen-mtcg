@@ -58,7 +58,7 @@ public final class SessionHandler {
         return uuid;
     }
 
-    public static UUID uuidFromHttpHeader(String headerValue) {
+    public static UUID tokenFromHttpHeader(String headerValue) {
         return headerValue == null ? null : UUID.fromString(headerValue.replaceFirst("^Bearer ", ""));
     }
 
@@ -84,5 +84,9 @@ public final class SessionHandler {
         if (allowAdmin && sessions.get(uuid).admin()) return TokenValidity.VALID;
         return TokenValidity.FORBIDDEN;
 
+    }
+
+    public UUID userUuidFromToken(UUID token) {
+        return this.sessions.containsKey(token) ? this.sessions.get(token).id() : null;
     }
 }

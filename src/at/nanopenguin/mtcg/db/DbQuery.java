@@ -28,14 +28,15 @@ public final class DbQuery {
     private String customSql;
     @Singular
     private List<Object> values;
+    private boolean isScript;
 
 
     public static class DbQueryBuilder {
 
         public List<Map<String, Object>> executeQuery() throws SQLException {
             DbQuery dbQuery = this.build();
+            if (dbQuery.customSql != null) return DbQuery.executeQuery(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
             if (dbQuery.command != SqlCommand.SELECT && dbQuery.returnColumn == null) throw new SQLException();
-            if (dbQuery.customSql != null) return DbQuery.executeQuery(dbQuery.customSql, dbQuery.values);
             return switch (dbQuery.command) {
                 case INSERT -> dbQuery.create(true);
                 case SELECT -> dbQuery.read();
@@ -45,15 +46,33 @@ public final class DbQuery {
         }
 
         public int executeUpdate() throws SQLException {
-            if (this.returnColumn != null) throw new SQLException();
             DbQuery dbQuery = this.build();
-            if (dbQuery.customSql != null) return DbQuery.executeUpdate(dbQuery.customSql, dbQuery.values);
+            if (dbQuery.customSql != null) return DbQuery.executeUpdate(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
+            if (this.returnColumn != null) throw new SQLException();
             return switch (dbQuery.command) {
                 case INSERT -> dbQuery.create();
                 case UPDATE -> dbQuery.update();
                 case DELETE -> dbQuery.delete();
                 default -> throw new SQLException();
             };
+        }
+
+        public boolean execute() throws SQLException {
+            DbQuery dbQuery = this.build();
+            if (dbQuery.customSql == null) throw new SQLException();
+            return DbQuery.execute(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
+        }
+
+        public DbQuery.DbQueryBuilder customSql(String customSql) {
+            this.customSql = customSql;
+            this.command = SqlCommand.CUSTOM;
+            this.table = Table.NAN;
+            return this;
+        }
+
+        public DbQuery.DbQueryBuilder isScript() {
+            this.isScript = true;
+            return this;
         }
     }
 
@@ -69,38 +88,68 @@ public final class DbQuery {
     }
 
     private static int executeUpdate(String sql, List<Object> parameterValues) throws SQLException {
+        return executeUpdate(sql, parameterValues, false);
+    }
+
+    private static int executeUpdate(String sql, List<Object> parameterValues, boolean isScript) throws SQLException {
         try (Connection connection = connect()) {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            StatementExecutor statementExecutor = isScript ?
+                    new CallableStatementExecutor(connection.prepareCall(sql)) :
+                    new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
-                preparedStatement.setObject(i++, value);
+                statementExecutor.setObject(i++, value);
             }
 
-            return preparedStatement.executeUpdate();
+            return statementExecutor.executeUpdate();
+        }
+    }
+
+    private static boolean execute(String sql, List<Object> parameterValues) throws SQLException {
+        return execute(sql, parameterValues, false);
+    }
+
+    private static boolean execute(String sql, List<Object> parameterValues, boolean isScript) throws SQLException {
+        try (Connection connection = connect()) {
+            StatementExecutor statementExecutor = isScript ?
+                    new CallableStatementExecutor(connection.prepareCall(sql)) :
+                    new PreparedStatementExecutor(connection.prepareStatement(sql));
+            int i = 1;
+            for (val value : parameterValues) {
+                statementExecutor.setObject(i++, value);
+            }
+
+            return statementExecutor.execute();
         }
     }
 
     private static List<Map<String, Object>> executeQuery(String sql, List<Object> parameterValues) throws SQLException {
-        try (Connection connection = connect()) {
+        return executeQuery(sql, parameterValues, false);
+    }
 
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+    private static List<Map<String, Object>> executeQuery(String sql, List<Object> parameterValues, boolean isScript) throws SQLException {
+        try (Connection connection = connect()) {
+            StatementExecutor statementExecutor = isScript ?
+                    new CallableStatementExecutor(connection.prepareCall(sql)) :
+                    new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
-                preparedStatement.setObject(i++, value);
+                statementExecutor.setObject(i++, value);
             }
 
-            ResultSet resultSet = preparedStatement.executeQuery();
+            try (ResultSet resultSet = statementExecutor.executeQuery()) {
 
-            List<Map<String, Object>> result = new ArrayList<>();
-            while (resultSet.next()) {
-                Map<String, Object> row = new HashMap<>();
-                for (i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-                    row.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                List<Map<String, Object>> result = new ArrayList<>();
+                while (resultSet.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
+                        row.put(resultSet.getMetaData().getColumnName(i), resultSet.getObject(i));
+                    }
+                    result.add(row);
                 }
-                result.add(row);
-            }
 
             return result;
+            }
         }
     }
 

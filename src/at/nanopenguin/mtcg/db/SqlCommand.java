@@ -5,4 +5,5 @@ public enum SqlCommand {
     SELECT,
     UPDATE,
     DELETE,
+    CUSTOM,
 }

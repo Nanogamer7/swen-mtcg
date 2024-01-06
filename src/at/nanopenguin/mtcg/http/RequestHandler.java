@@ -4,10 +4,7 @@ import at.nanopenguin.mtcg.application.service.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 @RequiredArgsConstructor
@@ -42,8 +39,12 @@ public class RequestHandler implements Runnable {
                 try {
                     response = service.handleRequest(httpRequest);
                 }
-                catch (JsonProcessingException e) {
-                    response = new Response(HttpStatus.BAD_REQUEST, "application/json", "");
+                catch (JsonProcessingException | ArrayIndexOutOfBoundsException e) {
+                    response = new Response(HttpStatus.BAD_REQUEST);
+                }
+                catch (Exception e) {
+                    System.out.println(e.getMessage()); // TODO: more info
+                    response = new Response(HttpStatus.INTERNAL);
                 }
             }
 

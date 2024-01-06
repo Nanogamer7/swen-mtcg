@@ -20,34 +20,27 @@ import java.util.UUID;
 public class PackagesService implements Service {
 
     @Override
-    public Response handleRequest(HttpRequest request) throws JsonProcessingException {
-        try {
-            if (request.getPath().split("/")[1].equals("packages") && request.getMethod() == HttpMethod.POST) {
-                UUID uuid;
-                return switch (SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), true)) {
-                    case MISSING, INVALID -> new Response(HttpStatus.UNAUTHORIZED);
-                    case FORBIDDEN -> new Response(HttpStatus.FORBIDDEN);
-                    case VALID -> new Response(
-                            Package.create(new ObjectMapper().readValue(request.getBody(), new TypeReference<List<Card>>() {})) ?
-                                    HttpStatus.CREATED :
-                                    HttpStatus.CONFLICT);
-                };
-            }
+    public Response handleRequest(HttpRequest request) throws JsonProcessingException, SQLException, ArrayIndexOutOfBoundsException {
 
-            if (String.join("/", Arrays.copyOfRange(request.getPath().split("/"), 1, 2)).equals("transactions/packages") && request.getMethod() == HttpMethod.POST) {
-                return new Response(SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization"))) != TokenValidity.VALID ?
+        if (request.getPath().split("/")[1].equals("packages") && request.getMethod() == HttpMethod.POST) {
+            UUID uuid;
+            return switch (SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization")), true)) {
+                case MISSING, INVALID -> new Response(HttpStatus.UNAUTHORIZED);
+                case FORBIDDEN -> new Response(HttpStatus.FORBIDDEN);
+                case VALID -> new Response(
+                        Package.create(new ObjectMapper().readValue(request.getBody(), new TypeReference<List<Card>>() {
+                        })) ?
+                                HttpStatus.CREATED :
+                                HttpStatus.CONFLICT);
+            };
+        }
+
+        if (String.join("/", Arrays.copyOfRange(request.getPath().split("/"), 1, 2)).equals("transactions/packages") && request.getMethod() == HttpMethod.POST) {
+            return new Response(SessionHandler.getInstance().verifyUUID(SessionHandler.uuidFromHttpHeader(request.getHttpHeader("Authorization"))) != TokenValidity.VALID ?
                     HttpStatus.UNAUTHORIZED :
-                    HttpStatus.NOT_IMPLEMENTED);
-            }
+                    HttpStatus.NOT_IMPLEMENTED); // Package.addToUser();
+        }
 
-            return new Response(HttpStatus.NOT_FOUND);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            return new Response(HttpStatus.BAD_REQUEST);
-        }
-        catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return new Response(HttpStatus.INTERNAL);
-        }
+        return new Response(HttpStatus.NOT_FOUND);
     }
 }

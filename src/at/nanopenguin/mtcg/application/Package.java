@@ -17,7 +17,7 @@ public class Package {
         val result = DbQuery.builder()
                 .command(SqlCommand.INSERT)
                 .table(Table.PACKAGES)
-                .parameter("cost", 5)
+                .parameter("uuid", UUID.randomUUID())
                 .returnColumn("uuid")
                 .executeQuery();
         if (result.isEmpty()) throw new SQLException(); // maybe change to different exception
@@ -40,5 +40,27 @@ public class Package {
         }
 
         return true;
+    }
+
+    public static boolean addToUser(UUID userUuid) throws SQLException {
+        return DbQuery.builder()
+                .customSql("""
+                        DO $$
+                        DECLARE user_uuid uuid;
+                        DECLARE package_uuid uuid;
+                        DECLARE cost int;
+                        BEGIN
+                            cost = ?;
+                            user_uuid = ?::uuid;
+                            IF (SELECT coins FROM users WHERE uuid = user_uuid) >= cost THEN
+                                package_uuid = (SELECT uuid FROM packages ORDER BY created_at LIMIT 1);
+                                UPDATE cards SET owner = user_uuid WHERE package = package_uuid;
+                                UPDATE users SET coins = coins - cost WHERE uuid = user_uuid;
+                                DELETE FROM packages WHERE uuid = package_uuid;
+                            END IF;
+                        END $$;""")
+                .value(5) // TODO: don't hardcode cost
+                .value(userUuid)
+                .executeUpdate() > 0;
     }
 }

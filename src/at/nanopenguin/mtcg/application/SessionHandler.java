@@ -28,11 +28,6 @@ public final class SessionHandler {
     }
 
     public synchronized UUID login(UserCredentials userCredentials) throws SQLException { // avoid multiple logins of same user
-        for (val session : this.sessions.entrySet()) {
-            if (userCredentials.username().equals(session.getValue().username())) {
-                this.sessions.remove(session.getKey());
-            }
-        }
 
         val result = DbQuery.builder()
                 .command(SqlCommand.SELECT)
@@ -53,13 +48,24 @@ public final class SessionHandler {
             return null;
         }
 
+        for (val session : this.sessions.entrySet()) {
+            if (userCredentials.username().equals(session.getValue().username())) {
+                this.sessions.remove(session.getKey());
+            }
+        }
+
         UUID uuid = UUID.randomUUID();
         this.sessions.put(uuid, new UserInfo((UUID) row1.get("uuid"), userCredentials.username(), (boolean) row1.get("admin")));
         return uuid;
     }
 
     public static UUID tokenFromHttpHeader(String headerValue) {
-        return headerValue == null ? null : UUID.fromString(headerValue.replaceFirst("^Bearer ", ""));
+        try {
+            return headerValue == null ? null : UUID.fromString(headerValue.replaceFirst("^Bearer ", ""));
+        }
+        catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     public TokenValidity verifyUUID(UUID uuid) {

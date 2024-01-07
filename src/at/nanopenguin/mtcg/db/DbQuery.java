@@ -30,6 +30,7 @@ public final class DbQuery {
     @Singular
     private List<Object> values;
     private boolean isScript;
+    private String postfix = null;
 
 
     public static class DbQueryBuilder {
@@ -194,11 +195,12 @@ public final class DbQuery {
                 .filter(columnName -> columnName.matches("^[a-zA-Z0-9_]+( AS [a-zA-Z0-9_]+)?$"))
                 .collect(Collectors.joining(", "));
 
-        return String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT DO NOTHING%s;",
+        return String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT DO NOTHING%s%s;",
                 table.table,
                 columns,
                 String.join(", ", Collections.nCopies(this.parameters.size(), "?")),
-                hasReturn ? " RETURNING " + this.returnColumn : "");
+                hasReturn ? " RETURNING " + this.returnColumn : "",
+                this.postfix != null ? " " + this.postfix : "");
     }
 
     private int create() throws SQLException {
@@ -219,10 +221,11 @@ public final class DbQuery {
         }
         this.columns.forEach(columnJoiner::add);
 
-        String sql = String.format("SELECT %s FROM %s%s;",
+        String sql = String.format("SELECT %s FROM %s%s%s;",
                 columnJoiner,
                 table.table,
-                this.conditions.isEmpty() ? "" : " WHERE " + this.buildParameterizedString(this.conditions, " AND "));
+                this.conditions.isEmpty() ? "" : " WHERE " + this.buildParameterizedString(this.conditions, " AND "),
+                this.postfix != null ? " " + this.postfix : "");
 
         return executeQuery(sql, new ArrayList<>(this.conditions.values()));
     }
@@ -231,11 +234,12 @@ public final class DbQuery {
         if (this.parameters.isEmpty()) throw new SQLException();
         if (this.conditions.isEmpty()) throw new SQLException();
 
-        return String.format("UPDATE %s SET %s WHERE %s%s;",
+        return String.format("UPDATE %s SET %s WHERE %s%s%s;",
                 table.table,
                 this.buildParameterizedString(this.parameters, ", "),
                 this.buildParameterizedString(this.conditions, " AND "),
-                hasReturn ? " RETURNING " + this.returnColumn : "");
+                hasReturn ? " RETURNING " + this.returnColumn : "",
+                this.postfix != null ? " " + this.postfix : "");
     }
 
     private int update() throws SQLException {
@@ -260,9 +264,10 @@ public final class DbQuery {
     private int delete() throws SQLException {
         if (this.conditions.isEmpty()) throw new SQLException();
 
-        String sql = String.format("DELETE FROM %s WHERE %s;",
+        String sql = String.format("DELETE FROM %s WHERE %s%s;",
                 table.table,
-                this.buildParameterizedString(this.conditions, " AND "));
+                this.buildParameterizedString(this.conditions, " AND "),
+                this.postfix != null ? " " + this.postfix : "");
 
         return executeUpdate(sql, new ArrayList<>(this.conditions.values()));
     }

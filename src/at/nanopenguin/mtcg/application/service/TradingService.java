@@ -4,7 +4,6 @@ import at.nanopenguin.mtcg.application.SessionHandler;
 import at.nanopenguin.mtcg.application.TokenValidity;
 import at.nanopenguin.mtcg.application.Trade;
 import at.nanopenguin.mtcg.application.service.schemas.TradingDeal;
-import at.nanopenguin.mtcg.http.HttpMethod;
 import at.nanopenguin.mtcg.http.HttpRequest;
 import at.nanopenguin.mtcg.http.HttpStatus;
 import at.nanopenguin.mtcg.http.Response;

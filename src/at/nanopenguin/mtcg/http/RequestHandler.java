@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 @RequiredArgsConstructor

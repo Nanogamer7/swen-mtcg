@@ -11,6 +11,7 @@ import at.nanopenguin.mtcg.http.HttpStatus;
 import at.nanopenguin.mtcg.http.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.val;
 
 import java.sql.SQLException;

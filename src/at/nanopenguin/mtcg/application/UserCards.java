@@ -29,11 +29,12 @@ public class UserCards extends User {
         return cards.toArray(new Card[0]);
     }
 
-    public static synchronized boolean setDeck(UUID[] cards, UUID userUuid) throws SQLException {
+    public static boolean setDeck(UUID[] cards, UUID userUuid) throws SQLException {
         if (DbQuery.builder()
                 .command(SqlCommand.SELECT)
                 .table(Table.CARDS)
                 .condition("owner", userUuid)
+                .condition("trade", false)
                 .condition("uuid", Arrays.asList(cards))
                 .executeQuery().size() != 4)
             return false;

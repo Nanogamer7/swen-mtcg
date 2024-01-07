@@ -7,6 +7,7 @@ import lombok.val;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,11 +81,29 @@ public final class DbQuery {
         return DriverManager.getConnection(connectionString);
     }
 
-    private String buildParameterizedString(@NonNull SortedMap<String, Object> parameters) {
+    private String buildParameterizedString(@NonNull SortedMap<String, Object> parameters, String separator) {
         if (parameters.isEmpty()) {
             return "";
         }
-        return String.join(" = ?, ", parameters.keySet()) + " = ?";
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (val parameter : parameters.entrySet()) {
+            if (!stringBuilder.isEmpty()) stringBuilder.append(separator);
+            if (parameter.getValue() instanceof List) {
+                stringBuilder
+                        .append(parameter.getKey())
+                        .append(" IN (")
+                        .append(String.join("", Collections.nCopies(((List<?>) parameter.getValue()).size() - 1, "?, ")))
+                        .append("?)");
+                continue;
+            }
+
+            stringBuilder
+                    .append(parameter.getKey())
+                    .append(" = ?");
+        }
+
+        return stringBuilder.toString();
     }
 
     private static int executeUpdate(String sql, List<Object> parameterValues) throws SQLException {
@@ -98,6 +117,11 @@ public final class DbQuery {
                     new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
+                if (value instanceof List<?>) {
+                    for (Object o : (List<?>) value)
+                        statementExecutor.setObject(i++, o);
+                    continue;
+                }
                 statementExecutor.setObject(i++, value);
             }
 
@@ -116,6 +140,11 @@ public final class DbQuery {
                     new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
+                if (value instanceof List<?>) {
+                    for (Object o : (List<?>) value)
+                        statementExecutor.setObject(i++, o);
+                    continue;
+                }
                 statementExecutor.setObject(i++, value);
             }
 
@@ -134,6 +163,11 @@ public final class DbQuery {
                     new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
+                if (value instanceof List<?>) {
+                    for (Object o : (List<?>) value)
+                        statementExecutor.setObject(i++, o);
+                    continue;
+                }
                 statementExecutor.setObject(i++, value);
             }
 
@@ -157,7 +191,7 @@ public final class DbQuery {
         if (this.parameters.isEmpty()) throw new SQLException("No parameters provided for INSERT statement.");
 
         String columns = this.parameters.keySet().stream()
-                .filter(columnName -> columnName.matches("[a-zA-Z0-9_]+"))
+                .filter(columnName -> columnName.matches("^[a-zA-Z0-9_]+( AS [a-zA-Z0-9_]+)?$"))
                 .collect(Collectors.joining(", "));
 
         return String.format("INSERT INTO %s (%s) VALUES (%s) ON CONFLICT DO NOTHING%s;",
@@ -188,7 +222,7 @@ public final class DbQuery {
         String sql = String.format("SELECT %s FROM %s%s;",
                 columnJoiner,
                 table.table,
-                this.conditions.isEmpty() ? "" : " WHERE (" + this.buildParameterizedString(this.conditions) + ")");
+                this.conditions.isEmpty() ? "" : " WHERE " + this.buildParameterizedString(this.conditions, " AND "));
 
         return executeQuery(sql, new ArrayList<>(this.conditions.values()));
     }
@@ -197,10 +231,10 @@ public final class DbQuery {
         if (this.parameters.isEmpty()) throw new SQLException();
         if (this.conditions.isEmpty()) throw new SQLException();
 
-        return String.format("UPDATE %s SET %s WHERE (%s)%s;",
+        return String.format("UPDATE %s SET %s WHERE %s%s;",
                 table.table,
-                this.buildParameterizedString(this.parameters),
-                this.buildParameterizedString(this.conditions),
+                this.buildParameterizedString(this.parameters, ", "),
+                this.buildParameterizedString(this.conditions, " AND "),
                 hasReturn ? " RETURNING " + this.returnColumn : "");
     }
 
@@ -226,9 +260,9 @@ public final class DbQuery {
     private int delete() throws SQLException {
         if (this.conditions.isEmpty()) throw new SQLException();
 
-        String sql = String.format("DELETE FROM %s WHERE (%s);",
+        String sql = String.format("DELETE FROM %s WHERE %s;",
                 table.table,
-                this.buildParameterizedString(this.conditions));
+                this.buildParameterizedString(this.conditions, " AND "));
 
         return executeUpdate(sql, new ArrayList<>(this.conditions.values()));
     }

@@ -30,8 +30,7 @@ public class PackagesService implements Service {
                 case MISSING, INVALID -> new Response(HttpStatus.UNAUTHORIZED);
                 case FORBIDDEN -> new Response(HttpStatus.FORBIDDEN);
                 case VALID -> new Response(
-                        Package.create(new ObjectMapper().readValue(request.getBody(), new TypeReference<List<Card>>() {
-                        })) ?
+                        Package.create(new ObjectMapper().readValue(request.getBody(), new TypeReference<List<Card>>() {})) ?
                                 HttpStatus.CREATED :
                                 HttpStatus.CONFLICT);
             };

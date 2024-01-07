@@ -9,6 +9,10 @@ public class Response {
     private final String contentType;
     private final String content;
 
+    public Response(HttpStatus httpStatus, String content) {
+        this(httpStatus, "application/json", content);
+    }
+
     public Response(HttpStatus httpStatus, String contentType, String content) {
         this.httpStatus = httpStatus;
 

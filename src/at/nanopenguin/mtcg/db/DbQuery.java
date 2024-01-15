@@ -1,5 +1,6 @@
 package at.nanopenguin.mtcg.db;
 
+import at.nanopenguin.mtcg.Pair;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -37,7 +38,8 @@ public final class DbQuery {
 
         public List<Map<String, Object>> executeQuery() throws SQLException {
             DbQuery dbQuery = this.build();
-            if (dbQuery.customSql != null) return DbQuery.executeQuery(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
+            if (dbQuery.customSql != null)
+                return DbQuery.executeQuery(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
             if (dbQuery.command != SqlCommand.SELECT && dbQuery.returnColumn == null) throw new SQLException();
             return switch (dbQuery.command) {
                 case INSERT -> dbQuery.create(true);
@@ -49,7 +51,8 @@ public final class DbQuery {
 
         public int executeUpdate() throws SQLException {
             DbQuery dbQuery = this.build();
-            if (dbQuery.customSql != null) return DbQuery.executeUpdate(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
+            if (dbQuery.customSql != null)
+                return DbQuery.executeUpdate(dbQuery.customSql, dbQuery.values, dbQuery.isScript);
             if (this.returnColumn != null) throw new SQLException();
             return switch (dbQuery.command) {
                 case INSERT -> dbQuery.create();
@@ -82,13 +85,15 @@ public final class DbQuery {
         return DriverManager.getConnection(connectionString);
     }
 
-    private String buildParameterizedString(@NonNull SortedMap<String, Object> parameters, String separator) {
-        if (parameters.isEmpty()) {
+    private String buildParameterizedString(@NonNull SortedMap<String, Object> parameterMap, String separator) {
+
+        if (parameterMap.isEmpty()) {
             return "";
         }
+
         StringBuilder stringBuilder = new StringBuilder();
 
-        for (val parameter : parameters.entrySet()) {
+        for (val parameter : parameterMap.entrySet()) {
             if (!stringBuilder.isEmpty()) stringBuilder.append(separator);
             if (parameter.getValue() instanceof List) {
                 stringBuilder
@@ -96,6 +101,15 @@ public final class DbQuery {
                         .append(" IN (")
                         .append(String.join("", Collections.nCopies(((List<?>) parameter.getValue()).size() - 1, "?, ")))
                         .append("?)");
+                continue;
+            }
+
+            if(parameter.getValue() instanceof Pair && ((Pair<?, ?>) parameter.getValue()).right() instanceof SqlComparisonOperator sqlComparisonOperator) {
+                stringBuilder
+                        .append(parameter.getKey())
+                        .append(" ")
+                        .append(sqlComparisonOperator.Operator)
+                        .append(" ?");
                 continue;
             }
 
@@ -164,6 +178,10 @@ public final class DbQuery {
                     new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
+                if (value instanceof Pair<?,?>) {
+                    statementExecutor.setObject(i++, ((Pair<?, ?>) value).left());
+                    continue;
+                }
                 if (value instanceof List<?>) {
                     for (Object o : (List<?>) value)
                         statementExecutor.setObject(i++, o);
@@ -183,7 +201,7 @@ public final class DbQuery {
                     result.add(row);
                 }
 
-            return result;
+                return result;
             }
         }
     }

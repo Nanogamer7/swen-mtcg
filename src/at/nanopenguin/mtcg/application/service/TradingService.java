@@ -26,7 +26,7 @@ public class TradingService implements Service {
         if (request.getPath().split("/")[1].equals("tradings")) {
             return switch (request.getMethod()) {
                 case GET -> {
-                    val result = Trade.get();
+                    val result = Trade.get(userUuid);
                     if (result.length == 0) yield new Response(HttpStatus.NO_CONTENT);
                     yield new Response(HttpStatus.OK, new ObjectMapper().writeValueAsString(result));
                 }
@@ -44,8 +44,8 @@ public class TradingService implements Service {
 
                     try {
                         yield new Response(Trade.acceptTrade(
-                                UUID.fromString(request.getPath().split("/")[3]),
-                                UUID.fromString(request.getBody()),
+                                UUID.fromString(request.getPath().split("/")[2]),
+                                UUID.fromString(new ObjectMapper().readValue(request.getBody(), String.class)),
                                 userUuid) ?
                                 HttpStatus.OK :
                                 HttpStatus.FORBIDDEN);
@@ -57,7 +57,7 @@ public class TradingService implements Service {
                 case DELETE -> {
                     try {
                         yield new Response(Trade.removeTrade(
-                                UUID.fromString(request.getPath().split("/")[3]),
+                                UUID.fromString(request.getPath().split("/")[2]),
                                 userUuid) ?
                                 HttpStatus.OK :
                                 HttpStatus.FORBIDDEN);

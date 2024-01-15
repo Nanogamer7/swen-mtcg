@@ -1,8 +1,10 @@
 package at.nanopenguin.mtcg.application;
 
+import at.nanopenguin.mtcg.Pair;
 import at.nanopenguin.mtcg.application.service.schemas.TradingDeal;
 import at.nanopenguin.mtcg.db.DbQuery;
 import at.nanopenguin.mtcg.db.SqlCommand;
+import at.nanopenguin.mtcg.db.SqlComparisonOperator;
 import at.nanopenguin.mtcg.db.Table;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
@@ -12,14 +14,15 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public class Trade {
-    public static TradingDeal[] get() throws SQLException {
+    public static TradingDeal[] get(UUID userUuid) throws SQLException {
         val dbQueryBuilder = DbQuery.builder()
                 .command(SqlCommand.SELECT)
                 .table(Table.TRADES)
                 .column("uuid AS id")
                 .column("card AS cardToTrade")
                 .column("card_type AS type")
-                .column("min_dmg AS minimumDamage");
+                .column("min_dmg AS minimumDamage")
+                .condition("user_uuid", new Pair<>(userUuid, SqlComparisonOperator.NOT_EQUAL));
 
         ArrayList<TradingDeal> trades = new ArrayList<>();
         for (val row : dbQueryBuilder.executeQuery()) {
@@ -65,10 +68,16 @@ public class Trade {
         val tradeResult = DbQuery.builder()
                 .command(SqlCommand.SELECT)
                 .table(Table.TRADES)
+                .column("uuid AS id")
+                .column("card AS cardToTrade")
+                .column("card_type AS type")
+                .column("min_dmg AS minimumDamage")
+                .column("user_uuid")
                 .condition("uuid", tradeUuid)
                 .executeQuery();
 
         if (tradeResult.isEmpty()) throw new NullPointerException();
+        if (tradeResult.get(0).get("user_uuid") == userUuid) return false;
 
         TradingDeal trade = new ObjectMapper().convertValue(tradeResult.get(0), TradingDeal.class);
 

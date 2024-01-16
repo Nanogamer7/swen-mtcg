@@ -77,27 +77,30 @@ public class Trade {
                 .executeQuery();
 
         if (tradeResult.isEmpty()) throw new NullPointerException();
-        if (tradeResult.get(0).get("user_uuid") == userUuid) return false;
+        if (tradeResult.get(0).get("user_uuid").equals(userUuid)) return false;
 
         TradingDeal trade = new ObjectMapper().convertValue(tradeResult.get(0), TradingDeal.class);
 
         val offeredResult = DbQuery.builder()
                 .command(SqlCommand.SELECT)
                 .table(Table.CARDS)
+                .condition("uuid", cardUuid)
                 .condition("deck", false)
                 .condition("owner", userUuid)
                 .executeQuery();
 
         if (offeredResult.isEmpty()) return false;
         val card = offeredResult.get(0);
-        if (!((String) card.get("name")).toLowerCase().endsWith(trade.type())) return false;
+
+        if ("spell".equals(trade.type()) && !((String) card.get("name")).toLowerCase().endsWith("spell")) return false;
+        // if (!((String) card.get("name")).toLowerCase().endsWith(trade.type())) return false;
 
         DbQuery.builder()
                 .command(SqlCommand.UPDATE)
                 .table(Table.CARDS)
                 .parameter("owner", userUuid)
                 .parameter("trade", false)
-                .condition("uuid", trade.cardToTrade())
+                .condition("uuid", UUID.fromString(trade.cardToTrade()))
                 .executeUpdate();
 
         DbQuery.builder()

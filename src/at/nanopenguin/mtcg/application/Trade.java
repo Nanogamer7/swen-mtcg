@@ -2,10 +2,7 @@ package at.nanopenguin.mtcg.application;
 
 import at.nanopenguin.mtcg.Pair;
 import at.nanopenguin.mtcg.application.service.schemas.TradingDeal;
-import at.nanopenguin.mtcg.db.DbQuery;
-import at.nanopenguin.mtcg.db.SqlCommand;
-import at.nanopenguin.mtcg.db.SqlComparisonOperator;
-import at.nanopenguin.mtcg.db.Table;
+import at.nanopenguin.mtcg.db.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 

@@ -1,8 +1,6 @@
 package at.nanopenguin.mtcg.application.service;
 
-import at.nanopenguin.mtcg.application.SessionHandler;
-import at.nanopenguin.mtcg.application.TokenValidity;
-import at.nanopenguin.mtcg.application.User;
+import at.nanopenguin.mtcg.application.*;
 import at.nanopenguin.mtcg.http.HttpMethod;
 import at.nanopenguin.mtcg.http.HttpRequest;
 import at.nanopenguin.mtcg.http.HttpStatus;
@@ -32,7 +30,9 @@ public class GameService implements Service {
         }
 
         if (request.getPath().split("/")[1].equals("battles") && request.getMethod() == HttpMethod.POST) {
-            return new Response(HttpStatus.NOT_IMPLEMENTED);
+            return new Response(HttpStatus.OK,
+                    "text/plain",
+                    String.join(System.lineSeparator(), BattleHandler.getInstance().startBattle(userUuid)));
         }
 
         return new Response(HttpStatus.NOT_FOUND);

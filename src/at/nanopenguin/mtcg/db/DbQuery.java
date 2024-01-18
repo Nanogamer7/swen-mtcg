@@ -104,11 +104,11 @@ public final class DbQuery {
                 continue;
             }
 
-            if(parameter.getValue() instanceof Pair && ((Pair<?, ?>) parameter.getValue()).right() instanceof SqlComparisonOperator sqlComparisonOperator) {
+            if (parameter.getValue() instanceof Pair && ((Pair<?, ?>) parameter.getValue()).right() instanceof SqlOperator sqlOperator) {
                 stringBuilder
                         .append(parameter.getKey())
                         .append(" ")
-                        .append(sqlComparisonOperator.Operator)
+                        .append(sqlOperator.operator())
                         .append(" ?");
                 continue;
             }
@@ -132,6 +132,10 @@ public final class DbQuery {
                     new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
+                if (value instanceof Pair<?,?>) {
+                    statementExecutor.setObject(i++, ((Pair<?, ?>) value).left());
+                    continue;
+                }
                 if (value instanceof List<?>) {
                     for (Object o : (List<?>) value)
                         statementExecutor.setObject(i++, o);
@@ -140,6 +144,7 @@ public final class DbQuery {
                 statementExecutor.setObject(i++, value);
             }
 
+            System.out.println(sql);
             return statementExecutor.executeUpdate();
         }
     }
@@ -155,6 +160,10 @@ public final class DbQuery {
                     new PreparedStatementExecutor(connection.prepareStatement(sql));
             int i = 1;
             for (val value : parameterValues) {
+                if (value instanceof Pair<?,?>) {
+                    statementExecutor.setObject(i++, ((Pair<?, ?>) value).left());
+                    continue;
+                }
                 if (value instanceof List<?>) {
                     for (Object o : (List<?>) value)
                         statementExecutor.setObject(i++, o);
@@ -163,6 +172,7 @@ public final class DbQuery {
                 statementExecutor.setObject(i++, value);
             }
 
+            System.out.println(sql);
             return statementExecutor.execute();
         }
     }
@@ -190,6 +200,7 @@ public final class DbQuery {
                 statementExecutor.setObject(i++, value);
             }
 
+            System.out.println(sql);
             try (ResultSet resultSet = statementExecutor.executeQuery()) {
 
                 List<Map<String, Object>> result = new ArrayList<>();

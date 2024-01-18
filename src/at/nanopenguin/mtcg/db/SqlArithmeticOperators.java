@@ -5,13 +5,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor
-public enum SqlComparisonOperator implements SqlOperator {
-    EQUAL("="),
-    GREATER_THAN(">"),
-    LESS_THAN("<"),
-    GREATER_EQUAL(">="),
-    LESS_EQUAL("<="),
-    NOT_EQUAL("!=");
+public enum SqlArithmeticOperators implements SqlOperator {
+    ADD("+"),
+    SUBTRACT("-"),
+    MULTIPLY("*"),
+    DIVIDE("/"),
+    MODULO("%");
 
     @Accessors(fluent = true)
     @Getter(onMethod = @__(@Override))

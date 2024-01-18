@@ -67,7 +67,7 @@ public class User {
                 .column("elo")
                 .column("wins")
                 .column("losses")
-                .postfix(" ORDER BY elo");
+                .postfix(" ORDER BY elo DESC");
 
         ArrayList<UserStats> stats = new ArrayList<>();
         for (val row : dbQueryBuilder.executeQuery()) {

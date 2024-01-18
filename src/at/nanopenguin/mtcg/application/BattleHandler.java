@@ -32,7 +32,8 @@ public class BattleHandler {
         synchronized (battle) {
             this.lock.unlock();
 
-            if (battle.isWaiting()) {
+            if (battle.isFirstPlayer()) {
+                battle.setFirstPlayer(false);
                 try {
                     battle.wait();
                 } catch (InterruptedException e) {
@@ -45,9 +46,9 @@ public class BattleHandler {
 
             battle.addCombatant(new Combatant(userUuid));
             battle.start();
-        }
 
-        battle.notify();
+            battle.notify();
+        }
         return battle.getLog().toArray(new String[0]);
     }
 }

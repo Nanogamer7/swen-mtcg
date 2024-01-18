@@ -1,4 +1,18 @@
 package at.nanopenguin.mtcg;
 
-public record Pair<T, U>(T left, U right) {
+import lombok.Setter;
+
+public class Pair<T, U> {
+    @Setter
+    private T left;
+    @Setter
+    private U right;
+
+    public Pair (T left, U right) {
+        this.left = left;
+        this.right = right;
+    }
+
+    public T left() { return this.left; };
+    public U right() { return this.right; };
 }

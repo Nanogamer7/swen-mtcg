@@ -1,6 +1,7 @@
 package at.nanopenguin.mtcg.http;
 
 import at.nanopenguin.mtcg.application.service.Service;
+import lombok.NonNull;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -8,11 +9,14 @@ import java.util.stream.IntStream;
 public class Router {
     private final Map<HttpMethod, Map<String, Route>> routeMap = new HashMap<>();
 
-    public void addRoute(final HttpMethod method, final String route, final Service service, final int[] pathVars) {
-        Map<String, Route> map = this.routeMap.get(method);
-        if (method != null && map == null) {
-            this.routeMap.put(method, (map = new HashMap<>()));
+    public Router() {
+        for (HttpMethod httpMethod : HttpMethod.values()) {
+            this.routeMap.put(httpMethod, new HashMap<>());
         }
+    }
+
+    public void addRoute(@NonNull final HttpMethod method, final String route, final Service service, final int[] pathVars) {
+        Map<String, Route> map = this.routeMap.get(method);
 
         List<String> routeComponents = new ArrayList<>(Arrays.asList(route.split("/")));
         for ( Integer pathVarPos : pathVars) {

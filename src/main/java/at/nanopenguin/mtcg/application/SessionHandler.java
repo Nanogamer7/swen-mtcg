@@ -12,20 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class SessionHandler {
-    private static SessionHandler INSTANCE;
     private final Map<UUID, UserInfo> sessions = new HashMap<>();
-
-    private SessionHandler() {
-
-    }
-
-    public static SessionHandler getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new SessionHandler();
-        }
-
-        return INSTANCE;
-    }
 
     public synchronized UUID login(UserCredentials userCredentials) throws SQLException { // avoid multiple logins of same user
 

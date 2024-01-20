@@ -15,13 +15,19 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public class TradingService implements Service {
+    private final SessionHandler sessionHandler;
+
+    public TradingService(SessionHandler sessionHandler) {
+        this.sessionHandler = sessionHandler;
+    }
+
     @Override
     public Response handleRequest(HttpRequest request) throws JsonProcessingException, ArrayIndexOutOfBoundsException, SQLException {
 
         UUID authToken = SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization"));
-        if (SessionHandler.getInstance().verifyUUID(authToken) != TokenValidity.VALID)
+        if (this.sessionHandler.verifyUUID(authToken) != TokenValidity.VALID)
             return new Response(HttpStatus.UNAUTHORIZED);
-        UUID userUuid = SessionHandler.getInstance().userUuidFromToken(authToken);
+        UUID userUuid = this.sessionHandler.userUuidFromToken(authToken);
 
         if (request.getPath().split("/")[1].equals("tradings")) {
             return switch (request.getMethod()) {

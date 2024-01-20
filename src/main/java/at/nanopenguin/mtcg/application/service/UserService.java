@@ -18,12 +18,17 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public class UserService implements Service {
+    private final SessionHandler sessionHandler;
+
+    public UserService(SessionHandler sessionHandler) {
+        this.sessionHandler = sessionHandler;
+    }
 
     @Override
     public Response handleRequest(HttpRequest request) throws JsonProcessingException, SQLException, ArrayIndexOutOfBoundsException {
         if (request.getPath().split("/")[1].equals("sessions") && request.getMethod() == HttpMethod.POST) {
             // login
-            UUID uuid = SessionHandler.getInstance().login(new ObjectMapper().readValue(request.getBody(), UserCredentials.class));
+            UUID uuid = this.sessionHandler.login(new ObjectMapper().readValue(request.getBody(), UserCredentials.class));
             return uuid != null ?
                     new Response(HttpStatus.OK, "application/json", uuid.toString()) :
                     new Response(HttpStatus.UNAUTHORIZED);
@@ -33,7 +38,7 @@ public class UserService implements Service {
             return switch (request.getMethod()) {
                 case GET -> {
                     String username = request.getPath().split("/")[2];
-                    if (SessionHandler.getInstance().verifyUUID(SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
+                    if (this.sessionHandler.verifyUUID(SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
                         yield new Response(HttpStatus.UNAUTHORIZED);
                     val userData = User.retrieve(username);
                     yield userData != null ?
@@ -47,7 +52,7 @@ public class UserService implements Service {
                 case PUT -> {
                     String username = request.getPath().split("/")[2];
                     UserData userData = new ObjectMapper().readValue(request.getBody(), UserData.class);
-                    if (SessionHandler.getInstance().verifyUUID(SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
+                    if (this.sessionHandler.verifyUUID(SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization")), username, true) != TokenValidity.VALID)
                         yield new Response(HttpStatus.UNAUTHORIZED);
                     yield User.update(username, userData) ? new Response(HttpStatus.OK) : new Response(HttpStatus.NOT_FOUND);
                 }

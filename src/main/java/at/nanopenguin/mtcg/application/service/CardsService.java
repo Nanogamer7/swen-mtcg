@@ -19,14 +19,19 @@ import java.util.List;
 import java.util.UUID;
 
 public class CardsService implements Service {
+    private final SessionHandler sessionHandler;
+
+    public CardsService(SessionHandler sessionHandler) {
+        this.sessionHandler = sessionHandler;
+    }
 
     @Override
     public Response handleRequest(HttpRequest request) throws JsonProcessingException, SQLException, ArrayIndexOutOfBoundsException {
 
         UUID authToken = SessionHandler.tokenFromHttpHeader(request.getHttpHeader("Authorization"));
-        if (SessionHandler.getInstance().verifyUUID(authToken) != TokenValidity.VALID)
+        if (this.sessionHandler.verifyUUID(authToken) != TokenValidity.VALID)
             return new Response(HttpStatus.UNAUTHORIZED);
-        UUID userUuid = SessionHandler.getInstance().userUuidFromToken(authToken);
+        UUID userUuid = this.sessionHandler.userUuidFromToken(authToken);
 
         if (request.getPath().split("/")[1].equals("cards") && request.getMethod() == HttpMethod.GET) {
             val result = UserCards.get(userUuid, false);

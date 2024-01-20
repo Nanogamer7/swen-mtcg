@@ -1,3 +1,5 @@
+package at.nanopenguin.mtcg;
+
 import at.nanopenguin.mtcg.application.service.*;
 import at.nanopenguin.mtcg.http.HttpMethod;
 import at.nanopenguin.mtcg.http.Router;

@@ -5,18 +5,34 @@ import at.nanopenguin.mtcg.application.service.schemas.Card;
 import at.nanopenguin.mtcg.db.*;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Combatant {
+
+    static class RandomList<E> extends ArrayList<E> {
+        Random r = new Random();
+        public E popRandom() {
+            int i = r.nextInt(this.size());
+            E e = this.get(i);
+            this.remove(i);
+            return e;
+        }
+    }
     private final UUID userUuid;
-    private List<Card> deck = new ArrayList<Card>();
+    public final String name;
+    private RandomList<Card> deck = new RandomList<>();
 
     public Combatant(UUID userUuid) throws SQLException {
         this.userUuid = userUuid;
-        this.deck = Arrays.asList(UserCards.get(userUuid, true));
+        this.name = (String) DbQuery.builder()
+                .command(SqlCommand.SELECT)
+                .table(Table.USERS)
+                .column("name")
+                .condition("uuid", userUuid)
+                .executeQuery()
+                .get(0)
+                .get("name");
+        this.deck.addAll(Arrays.asList(UserCards.get(userUuid, true)));
     }
 
     public void updateStats(boolean win) throws SQLException {
@@ -30,4 +46,16 @@ public class Combatant {
                 .condition("uuid", userUuid)
                 .executeUpdate();
     };
+
+    public Card getCard() {
+        return this.deck.popRandom();
+    }
+
+    public void addCard(Card card) {
+        this.deck.add(card);
+    }
+
+    public int deckSize() {
+        return this.deck.size();
+    }
 }

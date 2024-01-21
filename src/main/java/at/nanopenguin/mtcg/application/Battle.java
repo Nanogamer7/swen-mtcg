@@ -12,15 +12,15 @@ import java.util.List;
 public class Battle {
 
     @RequiredArgsConstructor
-    private enum ElementMod {
+    enum ElementMod {
         HALF(0.5),
         NONE(1),
         DOUBLE(2);
 
         public final double percentMod;
     }
-    private record FightDTO(Combatant player, Card card) {};
-    private record RoundResult(FightDTO winner, FightDTO loser, boolean draw, ElementMod winnerMod, ElementMod loserMod) {};
+    record FightDTO(Combatant player, Card card) {};
+    record RoundResult(FightDTO winner, FightDTO loser, boolean draw, ElementMod winnerMod, ElementMod loserMod) {};
     private Pair<Combatant, Combatant> combatants;
     @Getter
     private volatile List<String> log = new ArrayList<>();
@@ -50,7 +50,7 @@ public class Battle {
         this.combatants.right().updateStats(!leftWins);
     }
 
-    private void playRound(int round) {
+    void playRound(int round) {
         RoundResult result = this.fight(
                 new FightDTO(
                         this.combatants.left(),
@@ -74,7 +74,7 @@ public class Battle {
                 result.loser().card());
     }
 
-    private boolean isImmune(Card defend, Card attack) {
+    static boolean isImmune(Card defend, Card attack) {
         if (defend.name().equals("Dragon") && attack.name().endsWith("Goblin")) return true;
         if (defend.name().equals("Wizzard") && attack.name().equals("Ork")) return true;
         if (defend.name().equals("WaterSpell") && attack.name().equals("Knight")) return true;
@@ -84,7 +84,7 @@ public class Battle {
         return false;
     }
 
-    private enum Element {
+    enum Element {
         NORMAL,
         FIRE,
         WATER;
@@ -105,7 +105,7 @@ public class Battle {
         }
     }
 
-    private Pair<ElementMod, ElementMod> getElementMod(Card left, Card right) {
+    static Pair<ElementMod, ElementMod> getElementMod(Card left, Card right) {
         Pair<ElementMod, ElementMod> returnMods = new Pair<>(ElementMod.NONE, ElementMod.NONE);
 
         if (!left.name().endsWith("Spell") && !right.name().endsWith("Spell")) return returnMods;
@@ -130,13 +130,13 @@ public class Battle {
         return returnMods;
     }
 
-    private RoundResult fight(FightDTO left, FightDTO right) {
-        if (this.isImmune(left.card(), right.card())) return new RoundResult(left, right, false, ElementMod.NONE, ElementMod.NONE);
-        if (this.isImmune(right.card(), left.card())) return new RoundResult(right, left, false, ElementMod.NONE, ElementMod.NONE);
+    static RoundResult fight(FightDTO left, FightDTO right) {
+        if (isImmune(left.card(), right.card())) return new RoundResult(left, right, false, ElementMod.NONE, ElementMod.NONE);
+        if (isImmune(right.card(), left.card())) return new RoundResult(right, left, false, ElementMod.NONE, ElementMod.NONE);
 
         Pair<ElementMod, ElementMod> dmgMods = getElementMod(left.card(), right.card());
 
-        boolean leftWins = left.card().damage()*dmgMods.left().percentMod > right.card().damage()*dmgMods.right().percentMod;
+        boolean leftWins = left.card().damage()*dmgMods.left().percentMod >= right.card().damage()*dmgMods.right().percentMod;
         return new RoundResult(
                 leftWins ? left : right,
                 leftWins ? right : left,
@@ -145,7 +145,7 @@ public class Battle {
                 leftWins ? dmgMods.right() : dmgMods.left());
     }
 
-    private String createCombatString(int round, RoundResult result) {
+    static String createCombatString(int round, RoundResult result) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder
                 .append(round)

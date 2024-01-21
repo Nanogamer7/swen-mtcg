@@ -15,4 +15,13 @@ public class Pair<T, U> {
 
     public T left() { return this.left; };
     public U right() { return this.right; };
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Pair<?,?>) {
+            return left.equals(((Pair<?, ?>) o).left) && right.equals(((Pair<?, ?>) o).right);
+        }
+
+        return super.equals(o);
+    }
 }

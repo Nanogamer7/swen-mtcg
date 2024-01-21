@@ -46,3 +46,5 @@ There are two parts of the project which are tested through unit tests: the rout
 The curl script was modified to automatically store the authentication tokens in variables.
 
 Time tracking was added directly to the commits for a total of about 60 hours of work; commits without any time are less than 5 minutes.
+
+https://github.com/Nanogamer7/swen-mtcg/

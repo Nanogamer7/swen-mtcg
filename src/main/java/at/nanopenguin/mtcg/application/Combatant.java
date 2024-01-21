@@ -47,7 +47,7 @@ public class Combatant {
                 .executeUpdate();
     };
 
-    public Card getCard() {
+    public Card getAndRemoveCard() {
         return this.deck.popRandom();
     }
 

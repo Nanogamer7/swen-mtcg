@@ -6,6 +6,9 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.val;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.locks.Condition;
@@ -14,7 +17,15 @@ import java.util.stream.Stream;
 
 @Builder
 public final class DbQuery {
-    private static final String connectionString = "jdbc:postgresql://localhost:5432/mydb?user=postgres&password=postgres";
+    private static final String connectionString;
+
+    static {
+        try {
+            connectionString = Files.readString(Paths.get("connection_string.txt"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @NonNull
     private final SqlCommand command;
@@ -143,8 +154,6 @@ public final class DbQuery {
                 }
                 statementExecutor.setObject(i++, value);
             }
-
-            System.out.println(sql);
             return statementExecutor.executeUpdate();
         }
     }
@@ -171,8 +180,6 @@ public final class DbQuery {
                 }
                 statementExecutor.setObject(i++, value);
             }
-
-            System.out.println(sql);
             return statementExecutor.execute();
         }
     }
@@ -200,7 +207,6 @@ public final class DbQuery {
                 statementExecutor.setObject(i++, value);
             }
 
-            System.out.println(sql);
             try (ResultSet resultSet = statementExecutor.executeQuery()) {
 
                 List<Map<String, Object>> result = new ArrayList<>();

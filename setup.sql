@@ -56,6 +56,7 @@ SET default_table_access_method = heap;
 CREATE TABLE public.cards (
     uuid uuid DEFAULT gen_random_uuid() NOT NULL,
     damage double precision DEFAULT 0 NOT NULL,
+    crit integer DEFAULT 0,
     owner uuid,
     deck boolean DEFAULT false NOT NULL,
     trade boolean DEFAULT false NOT NULL,

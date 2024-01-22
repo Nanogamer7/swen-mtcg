@@ -93,7 +93,7 @@ public class BattleTest {
         Battle.FightDTO fightDTO1 = getFightDTO(card1, dmg1);
         Battle.FightDTO fightDTO2 = getFightDTO(card2, dmg2);
 
-        Battle.RoundResult result = Battle.fight(fightDTO1, fightDTO2);
+        Battle.RoundResult result = Battle.fight(fightDTO1, fightDTO2, false);
 
         switch (outcome) {
             case LEFT_WINS -> {

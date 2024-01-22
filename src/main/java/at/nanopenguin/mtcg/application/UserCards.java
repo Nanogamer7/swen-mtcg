@@ -20,6 +20,7 @@ public class UserCards extends User {
                 .column("uuid AS id")
                 .column("name")
                 .column("damage")
+                .column("crit")
                 .condition("owner", userUuid);
         if (deckOnly) dbQueryBuilder.condition("deck", true);
         ArrayList<Card> cards = new ArrayList<>();

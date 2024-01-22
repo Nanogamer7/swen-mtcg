@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class Battle {
 
@@ -57,7 +58,8 @@ public class Battle {
                         this.combatants.left().getAndRemoveCard()),
                 new FightDTO(
                         this.combatants.right(),
-                        this.combatants.right().getAndRemoveCard()));
+                        this.combatants.right().getAndRemoveCard()),
+                true);
 
         this.log.add(this.createCombatString(round, result));
 
@@ -130,17 +132,22 @@ public class Battle {
         return returnMods;
     }
 
-    static RoundResult fight(FightDTO left, FightDTO right) {
+    static RoundResult fight(FightDTO left, FightDTO right, boolean allowCrit) {
         if (isImmune(left.card(), right.card())) return new RoundResult(left, right, false, ElementMod.NONE, ElementMod.NONE);
         if (isImmune(right.card(), left.card())) return new RoundResult(right, left, false, ElementMod.NONE, ElementMod.NONE);
 
         Pair<ElementMod, ElementMod> dmgMods = getElementMod(left.card(), right.card());
 
-        boolean leftWins = left.card().damage()*dmgMods.left().percentMod >= right.card().damage()*dmgMods.right().percentMod;
+        allowCrit = allowCrit && left.card().crit() != null && right.card().crit() != null;
+
+        double leftCrit = allowCrit && new Random().nextInt() % 100 < left.card().crit() ? 1.5 : 1;
+        double rightCrit = allowCrit && new Random().nextInt() % 100 < right.card().crit() ? 1.5 : 1;
+
+        boolean leftWins = left.card().damage() * dmgMods.left().percentMod * leftCrit >= right.card().damage() * dmgMods.right().percentMod * rightCrit;
         return new RoundResult(
                 leftWins ? left : right,
                 leftWins ? right : left,
-                left.card().damage()*dmgMods.left().percentMod == right.card().damage()*dmgMods.right().percentMod,
+                left.card().damage() * dmgMods.left().percentMod * leftCrit == right.card().damage() * dmgMods.right().percentMod * rightCrit,
                 leftWins ? dmgMods.left() : dmgMods.right(),
                 leftWins ? dmgMods.right() : dmgMods.left());
     }

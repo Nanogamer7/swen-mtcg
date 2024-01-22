@@ -41,6 +41,10 @@ There are two parts of the project which are tested through unit tests: the rout
 - Starting with the HTTP server made it quite easy testing the application with integration tests (manual using postman or automated using the provided curl script).
 - A separate db helper class would probably make sense for larger, more complex projects, but was overkill here.
 
+## Unique feature
+
+My unique feature is the ability to crit: Whenever two monsters fight (i.e. no spells involved), they can critically strike for an increase in damage of 50%. Each card has a crit modifier, default to 0.
+
 ## Further notes
 
 The curl script was modified to automatically store the authentication tokens in variables.

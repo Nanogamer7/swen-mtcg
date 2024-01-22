@@ -34,6 +34,7 @@ public class Package {
                     .table(Table.CARDS);
             if (card.id() != null) query.parameter("uuid", card.id());
             if (query.parameter("damage", card.damage())
+                    .parameter("crit", card.crit())
                     .parameter("name", card.name())
                     .parameter("package", packageUuid)
                     .executeUpdate() != 1){

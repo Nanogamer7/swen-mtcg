@@ -10,5 +10,6 @@ import java.util.UUID;
 public record Card(
         UUID id,
         String name,
-        Float damage) {
+        Float damage,
+        Integer crit) {
 }
